@@ -23,6 +23,19 @@
     </dependency>
   </dependencies>
 
+  <developers>
+    <developer>
+      <id>originalios</id>
+      <name>Kohsuke Kawaguchi</name>
+      <email>kk@kohsuke.org</email>
+    </developer>
+    <developer>
+      <id>androidclone</id>
+      <name>Nicolae Ghimbovschi</name>
+      <email>xfreebird@gmail.com</email>
+    </developer>
+  </developers>
+
   <!-- get every artifact through repo.jenkins-ci.org, which proxies all the artifacts that we need -->
   <repositories>
     <repository>
@@ -30,6 +43,13 @@
       <url>http://repo.jenkins-ci.org/public/</url>
     </repository>
   </repositories>
+
+  <distributionManagement>
+    <repository>
+      <id>maven.jenkins-ci.org</id>
+      <url>http://maven.jenkins-ci.org:8081/content/repositories/releases/</url>
+    </repository>
+  </distributionManagement>
 
   <pluginRepositories>
     <pluginRepository>
