@@ -1,0 +1,2 @@
+Part of the tango icon set, so this is in public domain:
+https://github.com/paomedia/small-n-flat/blob/master/src/device-mobile-phone.svg
