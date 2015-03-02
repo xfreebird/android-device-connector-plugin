@@ -25,11 +25,6 @@
 
   <developers>
     <developer>
-      <id>originalios</id>
-      <name>Kohsuke Kawaguchi</name>
-      <email>kk@kohsuke.org</email>
-    </developer>
-    <developer>
       <id>androidclone</id>
       <name>Nicolae Ghimbovschi</name>
       <email>xfreebird@gmail.com</email>
