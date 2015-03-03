@@ -59,9 +59,25 @@ public class AndroidDeviceList implements RootAction, ModelObject {
 
         Map<Future<List<AndroidDevice>>,Computer> futures = newHashMap();
 
+
         for (Computer c : Jenkins.getInstance().getComputers()) {
             try {
-                futures.put(c.getChannel().callAsync(new FetchTask(listener, c.getEnvironment())), c);
+                EnvVars envVars = new EnvVars();
+
+                try {
+                        envVars = c.getEnvironment();
+                        GlobalConfigurationImpl config = new GlobalConfigurationImpl();
+                        String configData = config.getMapping();
+                        if (configData != null) {
+                            envVars.put("MAPPING", configData);
+                        }
+
+                    } catch (Exception exception) {
+                        listener.getLogger().println("Couldn't read configuration" + exception);
+
+                    }
+
+                futures.put(c.getChannel().callAsync(new FetchTask(listener, envVars)), c);
             } catch (Exception e) {
                 e.printStackTrace(listener.error("Failed to list up Android devices on"+c.getName()));
             }
@@ -250,7 +266,7 @@ public class AndroidDeviceList implements RootAction, ModelObject {
             for (Object device:offline) {
 
                 Properties androidDeviceProperties = new Properties();
-                androidDeviceProperties.put("UniqueDeviceID", mappings.getProperty((String)device));
+                androidDeviceProperties.put("UniqueDeviceID", (String)device);
                 androidDeviceProperties.put("AlternativeName", mappings.getProperty((String)device) + " (unreachable)");
 
                 androidDevicesList.add(new AndroidDevice(androidDeviceProperties));
