@@ -89,7 +89,23 @@ public class AndroidDeviceList implements RootAction, ModelObject {
         List<AndroidDevice> r = Collections.emptyList();
         if (c.isOnline()) {// ignore disabled slaves
             try {
-                r = c.getChannel().call(new FetchTask(listener, c.getEnvironment()));
+                EnvVars envVars = c.getEnvironment();
+
+                try {
+
+                    GlobalConfigurationImpl config = new GlobalConfigurationImpl();
+                    String configData = config.getMapping();
+                    if (configData != null) {
+                        envVars.put("MAPPING", configData);
+                    }
+
+                } catch (Exception exception) {
+                    listener.getLogger().println("Couldn't read configuration" + exception);
+
+                }
+
+
+                r = c.getChannel().call(new FetchTask(listener, envVars));
                 for (AndroidDevice dev : r) dev.computer = c;
             } catch (Exception e) {
                 e.printStackTrace(listener.error("Failed to list up Android devices"));
@@ -151,6 +167,7 @@ public class AndroidDeviceList implements RootAction, ModelObject {
     private static class FetchTask implements Callable<List<AndroidDevice>,IOException> {
         private final TaskListener listener;
         private final EnvVars envVars;
+        private final String mMappingRegex = "(.*)=(.*)";
         private final String mAdbDevicesRegex = "(.*)\\t+(.*)";
         private final String mAdbDeviceShellGetPropRegex = "\\[(.*)\\]: \\[(.*)\\]";
 
@@ -200,6 +217,15 @@ public class AndroidDeviceList implements RootAction, ModelObject {
         public List<AndroidDevice> call() throws IOException {
             List<AndroidDevice> androidDevicesList = newArrayList();
 
+
+            //extract mappings from the config
+            Properties mappings = new Properties();
+
+
+            if (envVars.containsKey("MAPPING")) {
+                    mappings = extractOutputProperties(listener.getLogger(), (String)envVars.get("MAPPING"), mMappingRegex);
+            }
+
             listener.getLogger().println("Getting devices");
 
             String connectedDevices = executeCommand(listener.getLogger(), getAndroidDevicesArgumentsList());
@@ -211,6 +237,22 @@ public class AndroidDeviceList implements RootAction, ModelObject {
                 Properties androidDeviceProperties = extractOutputProperties(listener.getLogger(), deviceProperties, mAdbDeviceShellGetPropRegex);
 
                 androidDeviceProperties.put("UniqueDeviceID", deviceId);
+                if (mappings.containsKey((String)deviceId)) {
+                    androidDeviceProperties.put("AlternativeName", mappings.getProperty((String)deviceId));
+                    mappings.remove((String)deviceId);
+                }
+
+                androidDevicesList.add(new AndroidDevice(androidDeviceProperties));
+            }
+
+            //add offline devices
+            Set offline = mappings.keySet();
+            for (Object device:offline) {
+
+                Properties androidDeviceProperties = new Properties();
+                androidDeviceProperties.put("UniqueDeviceID", mappings.getProperty((String)device));
+                androidDeviceProperties.put("AlternativeName", mappings.getProperty((String)device) + " (unreachable)");
+
                 androidDevicesList.add(new AndroidDevice(androidDeviceProperties));
             }
 

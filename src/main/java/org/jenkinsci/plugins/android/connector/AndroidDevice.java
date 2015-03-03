@@ -26,6 +26,8 @@ public class AndroidDevice implements Serializable, ModelObject {
     static final String PROP_PRODUCT_TYPE = "ProductType";
     static final String PROP_PRODUCT_ID = "UniqueDeviceID";
     static final String PROP_PRODUCT_MODEL = "ro.product.model";
+    static final String PROP_ALTERNATIVE_NAME = "AlternativeName";
+
     static final String PROP_PRODUCT_OS_VERSION = "ro.build.version.release";
     static final String DEVICE_DEFAULT_NAME = "Android Device";
 
@@ -53,6 +55,10 @@ public class AndroidDevice implements Serializable, ModelObject {
 
         if (props.containsKey(PROP_PRODUCT_MODEL)) {
             deviceName = props.getProperty(PROP_PRODUCT_MODEL);
+        }
+
+        if (props.containsKey(PROP_ALTERNATIVE_NAME)) {
+            deviceName = props.getProperty(PROP_ALTERNATIVE_NAME);
         }
 
         return deviceName;
